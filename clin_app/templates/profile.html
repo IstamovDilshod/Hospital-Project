@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Profil{% endblock %}
+{% block content %}
+<h1 class="page-title">Profil</h1>
+
+<div class="detail-grid">
+
+  <div class="card center">
+    <div class="avatar avatar-lg avatar-initials" style="margin:0 auto 14px">
+      {% if me.first_name or me.last_name %}{{ me.first_name|slice:":1"|upper }}{{ me.last_name|slice:":1"|upper }}{% else %}<svg class="icon"><use href="#i-user"/></svg>{% endif %}
+    </div>
+    <h2 style="font-size:20px">{{ me.get_full_name|default:me.username }}</h2>
+    <span class="badge badge-green" style="margin-top:6px">{{ me.get_role_display }}</span>
+    <div class="info-list" style="text-align:left;margin-top:18px">
+      <div class="row"><svg class="icon"><use href="#i-user"/></svg> Login: <b>{{ me.username }}</b></div>
+      <div class="row"><svg class="icon"><use href="#i-phone"/></svg> {{ me.phone|default:"Telefon kiritilmagan" }}</div>
+    </div>
+  </div>
+
+  <div>
+    <form method="post" class="card form-grid mb-3">
+      {% csrf_token %}
+      <div class="field full"><h2 class="section-title" style="margin:0">Shaxsiy ma'lumotlar</h2></div>
+      {% if form.non_field_errors %}<div class="field full">{{ form.non_field_errors }}</div>{% endif %}
+
+      {% for field in form %}
+        <div class="field {% if field.name == 'phone' or field.name == 'birth_date' %}{% endif %}">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% for e in field.errors %}<span class="err">{{ e }}</span>{% endfor %}
+        </div>
+      {% endfor %}
+
+      <div class="form-actions">
+        <button type="submit" class="btn"><svg class="icon"><use href="#i-check"/></svg> Saqlash</button>
+      </div>
+    </form>
+
+    <div class="card">
+      <h2 class="section-title">Xavfsizlik</h2>
+      <p class="muted small mb-2">Parolni vaqti-vaqti bilan almashtirib turing. Login o'zgartirilmaydi.</p>
+      <a href="{% url 'password_change' %}" class="btn btn-outline">
+        <svg class="icon"><use href="#i-key"/></svg> Parolni almashtirish
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

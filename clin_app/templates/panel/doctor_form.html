@@ -1,0 +1,30 @@
+{% extends 'panel/base.html' %}
+{% block title %}{% if doctor %}Shifokorni tahrirlash{% else %}Yangi shifokor{% endif %}{% endblock %}
+{% block panel %}
+<div class="panel-head">
+  <h1 class="page-title">{% if doctor %}Shifokorni tahrirlash{% else %}Yangi shifokor{% endif %}</h1>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="card form-grid">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="field full">{{ form.non_field_errors }}</div>{% endif %}
+
+  {% for field in form %}
+    <div class="field {% if field.name == 'bio' or field.name == 'photo' %}full{% endif %}">
+      {% if field.name == 'is_active' %}
+        <label class="check">{{ field }} {{ field.label }}</label>
+      {% else %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+      {% endif %}
+      {% if field.help_text %}<span class="help">{{ field.help_text }}</span>{% endif %}
+      {% for e in field.errors %}<span class="err">{{ e }}</span>{% endfor %}
+    </div>
+  {% endfor %}
+
+  <div class="form-actions">
+    <button type="submit" class="btn"><svg class="icon"><use href="#i-check"/></svg> Saqlash</button>
+    <a href="{% url 'panel_doctors' %}" class="btn btn-outline">Bekor qilish</a>
+  </div>
+</form>
+{% endblock %}

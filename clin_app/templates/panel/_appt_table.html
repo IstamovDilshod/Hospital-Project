@@ -1,0 +1,47 @@
+<div class="card table-wrap">
+  <table class="table">
+    <thead>
+      <tr><th>Sana</th><th>Vaqt</th><th>Bemor</th><th>Shifokor</th><th>Holat</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for a in appointments %}
+      <tr>
+        <td>{{ a.date|date:"d.m.Y" }}</td>
+        <td><b>{{ a.time|time:"H:i" }}</b></td>
+        <td>
+          {{ a.patient.get_full_name|default:a.patient.username }}
+          {% if a.patient.phone %}<div class="muted small">{{ a.patient.phone }}</div>{% endif %}
+          {% if a.complaint %}<div class="muted small">{{ a.complaint|truncatechars:60 }}</div>{% endif %}
+        </td>
+        <td>
+          {{ a.doctor.user.get_full_name|default:a.doctor.user.username }}
+          <div class="teal small">{{ a.doctor.specialty }}</div>
+        </td>
+        <td>
+          <span class="badge
+            {% if a.status == 'cancelled' or a.status == 'no_show' %}badge-red
+            {% elif a.status == 'completed' %}badge-gray
+            {% else %}badge-green{% endif %}">{{ a.get_status_display }}</span>
+        </td>
+        <td>
+          {% if a.status == 'pending' or a.status == 'confirmed' %}
+          <form method="post" action="{% url 'panel_appointment_status' a.pk %}" class="actions">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            {% if a.status == 'pending' %}
+              <button name="status" value="confirmed" class="icon-btn ok" title="Tasdiqlash"><svg class="icon"><use href="#i-check"/></svg></button>
+            {% endif %}
+            <button name="status" value="completed" class="icon-btn ok" title="Yakunlandi"><svg class="icon"><use href="#i-check"/></svg></button>
+            <button name="status" value="no_show" class="icon-btn bad" title="Kelmadi"><svg class="icon"><use href="#i-userx"/></svg></button>
+            <button name="status" value="cancelled" class="icon-btn bad" title="Bekor qilish"
+                    onclick="return confirm('Qabul bekor qilinsinmi?')"><svg class="icon"><use href="#i-x"/></svg></button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="center muted">Qabullar yo'q.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>

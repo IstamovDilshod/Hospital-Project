@@ -1,0 +1,78 @@
+{% extends 'dpanel/base.html' %}
+{% block title %}Qabul{% endblock %}
+{% block panel %}
+<div class="panel-head">
+  <h1 class="page-title">Qabul</h1>
+  <a href="{% url 'dpanel_dashboard' %}" class="btn btn-outline">Orqaga</a>
+</div>
+
+<div class="detail-two">
+
+  <div class="card">
+    <div class="doctor-head" style="margin-bottom:16px">
+      <div class="avatar"><svg class="icon"><use href="#i-user"/></svg></div>
+      <div>
+        <div class="doctor-name">{{ appt.patient.get_full_name|default:appt.patient.username }}</div>
+        <span class="badge
+          {% if appt.status == 'cancelled' or appt.status == 'no_show' %}badge-red
+          {% elif appt.status == 'completed' %}badge-gray
+          {% else %}badge-green{% endif %}">{{ appt.get_status_display }}</span>
+      </div>
+    </div>
+
+    <div class="kv">
+      <div class="kv-row"><span>Sana</span><b>{{ appt.date|date:"d.m.Y" }}</b></div>
+      <div class="kv-row"><span>Vaqt</span><b>{{ appt.time|time:"H:i" }}</b></div>
+      <div class="kv-row"><span>Telefon</span><b>{{ appt.patient.phone|default:"-" }}</b></div>
+      <div class="kv-row"><span>Yoshi</span><b>{% if age is not None %}{{ age }}{% else %}-{% endif %}</b></div>
+      <div class="kv-row" style="display:block"><span>Shikoyat</span>
+        <p style="margin-top:6px;color:var(--ink)">{{ appt.complaint|default:"Kiritilmagan" }}</p></div>
+    </div>
+
+    {% if appt.status == 'pending' or appt.status == 'confirmed' %}
+    <form method="post" action="{% url 'dpanel_appointment_status' appt.pk %}" style="margin-top:18px;display:flex;gap:8px;flex-wrap:wrap">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <button name="status" value="no_show" class="btn btn-outline btn-sm">Kelmadi</button>
+      <button name="status" value="cancelled" class="btn btn-outline btn-sm"
+              onclick="return confirm('Qabul bekor qilinsinmi?')">Bekor qilish</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <div>
+    <div class="card mb-3">
+      <h2 class="section-title">Shifokor izohi</h2>
+      <form method="post">
+        {% csrf_token %}
+        <textarea name="doctor_note" class="note" placeholder="Tashxis, tavsiya, dori-darmonlar...">{{ appt.doctor_note }}</textarea>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-outline">Saqlash</button>
+          {% if appt.status == 'pending' or appt.status == 'confirmed' %}
+            <button type="submit" name="finish" value="1" class="btn">
+              <svg class="icon"><use href="#i-check"/></svg> Saqlash va yakunlash</button>
+          {% endif %}
+        </div>
+      </form>
+      <p class="muted small" style="margin-top:12px">Izoh faqat sizga ko'rinadi, bemor ko'rmaydi.</p>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Oldingi tashriflar</h2>
+      {% for h in history %}
+        <div class="history-item">
+          <div class="history-head">
+            <span>{{ h.date|date:"d.m.Y" }} · {{ h.time|time:"H:i" }}</span>
+            <span class="badge {% if h.status == 'cancelled' or h.status == 'no_show' %}badge-red{% elif h.status == 'completed' %}badge-gray{% else %}badge-green{% endif %}">{{ h.get_status_display }}</span>
+          </div>
+          {% if h.complaint %}<div class="muted">Shikoyat: {{ h.complaint }}</div>{% endif %}
+          {% if h.doctor_note %}<div>Izoh: {{ h.doctor_note }}</div>{% endif %}
+        </div>
+      {% empty %}
+        <p class="muted small">Bu bemor sizga birinchi marta kelyapti.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

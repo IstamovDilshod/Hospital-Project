@@ -1,0 +1,32 @@
+{% extends 'dpanel/base.html' %}
+{% block title %}Bemor tarixi{% endblock %}
+{% block panel %}
+<div class="panel-head">
+  <h1 class="page-title">{{ patient.get_full_name|default:patient.username }}</h1>
+  <a href="{% url 'dpanel_patients' %}" class="btn btn-outline">Orqaga</a>
+</div>
+
+<div class="detail-two">
+  <div class="card">
+    <div class="kv">
+      <div class="kv-row"><span>Telefon</span><b>{{ patient.phone|default:"-" }}</b></div>
+      <div class="kv-row"><span>Yoshi</span><b>{% if age is not None %}{{ age }}{% else %}-{% endif %}</b></div>
+      <div class="kv-row"><span>Tashriflar soni</span><b>{{ visits|length }}</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">Tashriflar tarixi</h2>
+    {% for v in visits %}
+      <div class="history-item">
+        <div class="history-head">
+          <a href="{% url 'dpanel_appointment' v.pk %}" class="teal">{{ v.date|date:"d.m.Y" }} · {{ v.time|time:"H:i" }}</a>
+          <span class="badge {% if v.status == 'cancelled' or v.status == 'no_show' %}badge-red{% elif v.status == 'completed' %}badge-gray{% else %}badge-green{% endif %}">{{ v.get_status_display }}</span>
+        </div>
+        {% if v.complaint %}<div class="muted">Shikoyat: {{ v.complaint }}</div>{% endif %}
+        {% if v.doctor_note %}<div>Izoh: {{ v.doctor_note }}</div>{% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

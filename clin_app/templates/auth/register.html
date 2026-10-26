@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Ro'yxatdan o'tish{% endblock %}
+{% block content %}
+<div class="card auth-box">
+  <h1>Ro'yxatdan o'tish</h1>
+  <form method="post" class="auth-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-block">Ro'yxatdan o'tish</button>
+  </form>
+  <p class="small center muted" style="margin-top:16px">Akkauntingiz bormi?
+    <a href="{% url 'login' %}" class="teal" style="font-weight:700">Kiring</a></p>
+</div>
+{% endblock %}

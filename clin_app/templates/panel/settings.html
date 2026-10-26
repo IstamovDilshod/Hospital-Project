@@ -1,0 +1,45 @@
+{% extends 'panel/base.html' %}
+{% block title %}Sozlamalar{% endblock %}
+{% block panel %}
+<div class="panel-head"><h1 class="page-title">Sozlamalar</h1></div>
+
+<div class="card mb-3">
+  <h2 class="section-title">Bo'limlar</h2>
+  <form method="post" class="inline-add">
+    {% csrf_token %}
+    <input type="hidden" name="kind" value="department">
+    {{ dep_form.name }}
+    <button type="submit" class="btn"><svg class="icon"><use href="#i-plus"/></svg> Qo'shish</button>
+  </form>
+  {% for e in dep_form.name.errors %}<span class="err">{{ e }}</span>{% endfor %}
+
+  {% for dep in departments %}
+    <div class="list-row">
+      <span>{{ dep.name }}</span>
+      <form method="post" action="{% url 'panel_department_delete' dep.pk %}"
+            onsubmit="return confirm('Bo\'lim o\'chirilsinmi?')">
+        {% csrf_token %}
+        <button class="icon-btn bad" title="O'chirish"><svg class="icon"><use href="#i-trash"/></svg></button>
+      </form>
+    </div>
+  {% empty %}
+    <p class="muted small">Hali bo'lim qo'shilmagan.</p>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h2 class="section-title">Mutaxassisliklar</h2>
+  <p class="muted small mb-2">Bu ro'yxat barcha kasalxonalar uchun umumiy.</p>
+  <form method="post" class="inline-add">
+    {% csrf_token %}
+    <input type="hidden" name="kind" value="specialty">
+    {{ spec_form.name }}
+    <button type="submit" class="btn"><svg class="icon"><use href="#i-plus"/></svg> Qo'shish</button>
+  </form>
+  {% for e in spec_form.name.errors %}<span class="err">{{ e }}</span>{% endfor %}
+
+  <div class="chips" style="margin-bottom:0">
+    {% for s in specialties %}<span class="chip">{{ s.name }}</span>{% endfor %}
+  </div>
+</div>
+{% endblock %}

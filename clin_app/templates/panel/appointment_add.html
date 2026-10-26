@@ -1,0 +1,128 @@
+{% extends 'panel/base.html' %}
+{% block title %}Qabul qo'shish{% endblock %}
+{% block panel %}
+<div class="panel-head">
+  <h1 class="page-title">Qo'lda qabul qo'shish</h1>
+  <a href="{% url 'panel_appointments' %}" class="btn btn-outline">Orqaga</a>
+</div>
+
+<form method="post" class="card form-grid" id="book-form" data-today="{{ today }}">
+  {% csrf_token %}
+  {% if form.non_field_errors %}<div class="field full">{{ form.non_field_errors }}</div>{% endif %}
+
+  <div class="field full"><h2 class="section-title" style="margin:0">1. Shifokor va vaqt</h2></div>
+
+  <div class="field">
+    <label for="{{ form.doctor.id_for_label }}">{{ form.doctor.label }}</label>
+    {{ form.doctor }}
+    {% for e in form.doctor.errors %}<span class="err">{{ e }}</span>{% endfor %}
+  </div>
+
+  <div class="field">
+    <label for="{{ form.date.id_for_label }}">{{ form.date.label }}</label>
+    {{ form.date }}
+    {% for e in form.date.errors %}<span class="err">{{ e }}</span>{% endfor %}
+  </div>
+
+  <div class="field full">
+    <label>Bo'sh vaqtlar</label>
+    <div id="slot-box"
+         data-url-template="{% url 'panel_doctor_slots' 0 %}"
+         data-selected="{{ form.time.value|default:'' }}">
+      <p class="muted small">Shifokor va kunni tanlang.</p>
+    </div>
+    {% for e in form.time.errors %}<span class="err">{{ e }}</span>{% endfor %}
+  </div>
+
+  <div class="field full"><h2 class="section-title" style="margin:8px 0 0">2. Bemor</h2></div>
+
+  <div class="field full">
+    <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+    {{ form.phone }}
+    <span class="help">Raqam tizimda bo'lsa, qabul o'sha bemorga yoziladi. Bo'lmasa, yangi bemor yaratiladi.</span>
+    {% for e in form.phone.errors %}<span class="err">{{ e }}</span>{% endfor %}
+  </div>
+
+  <div class="field">
+    <label for="{{ form.first_name.id_for_label }}">{{ form.first_name.label }}</label>
+    {{ form.first_name }}
+    {% for e in form.first_name.errors %}<span class="err">{{ e }}</span>{% endfor %}
+  </div>
+
+  <div class="field">
+    <label for="{{ form.last_name.id_for_label }}">{{ form.last_name.label }}</label>
+    {{ form.last_name }}
+    {% for e in form.last_name.errors %}<span class="err">{{ e }}</span>{% endfor %}
+  </div>
+
+  <div class="field full">
+    <label for="{{ form.complaint.id_for_label }}">{{ form.complaint.label }}</label>
+    {{ form.complaint }}
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn"><svg class="icon"><use href="#i-check"/></svg> Qabulni qo'shish</button>
+    <a href="{% url 'panel_appointments' %}" class="btn btn-outline">Bekor qilish</a>
+  </div>
+</form>
+
+<script>
+(function () {
+  var form = document.getElementById('book-form');
+  var doctor = document.getElementById('{{ form.doctor.id_for_label }}');
+  var date = document.getElementById('{{ form.date.id_for_label }}');
+  var box = document.getElementById('slot-box');
+  if (!form || !doctor || !date || !box) return;
+
+  var today = form.dataset.today;
+  var selected = box.dataset.selected;
+  date.min = today;
+  if (!date.value) date.value = today;
+
+  function message(text) {
+    box.innerHTML = '';
+    var p = document.createElement('p');
+    p.className = 'muted small';
+    p.textContent = text;
+    box.appendChild(p);
+  }
+
+  function render(slots) {
+    if (!slots.length) { message("Bu kunga bo'sh vaqt yo'q."); return; }
+    box.innerHTML = '';
+    var list = document.createElement('div');
+    list.className = 'slot-list';
+    slots.forEach(function (t) {
+      var label = document.createElement('label');
+      label.className = 'slot';
+      var input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'time';
+      input.value = t;
+      if (t === selected) input.checked = true;
+      var span = document.createElement('span');
+      span.textContent = t;
+      label.appendChild(input);
+      label.appendChild(span);
+      list.appendChild(label);
+    });
+    box.appendChild(list);
+  }
+
+  function load() {
+    if (!doctor.value || !date.value) { message('Shifokor va kunni tanlang.'); return; }
+    message('Yuklanmoqda...');
+    var url = box.dataset.urlTemplate.replace('/0/', '/' + doctor.value + '/')
+            + '?date=' + encodeURIComponent(date.value);
+    fetch(url)
+      .then(function (r) { return r.json(); })
+      .then(function (d) { render(d.slots); })
+      .catch(function () { message("Xatolik yuz berdi. Qayta urinib ko'ring."); });
+  }
+
+  doctor.addEventListener('change', function () { selected = ''; load(); });
+  date.addEventListener('change', function () { selected = ''; load(); });
+  load();
+})();
+</script>
+{% endblock %}

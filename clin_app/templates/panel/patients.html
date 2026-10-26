@@ -1,0 +1,52 @@
+{% extends 'panel/base.html' %}
+{% block title %}Bemorlar{% endblock %}
+{% block panel %}
+<div class="panel-head"><h1 class="page-title">Bemorlar</h1></div>
+
+<form method="get" class="filters" style="grid-template-columns:1fr auto">
+  <input name="q" value="{{ q }}" placeholder="Ism, telefon yoki login bo'yicha qidirish">
+  <button type="submit" class="btn"><svg class="icon"><use href="#i-search"/></svg> Qidirish</button>
+</form>
+
+<div class="card table-wrap">
+  <table class="table">
+    <thead>
+      <tr><th>Bemor</th><th>Telefon</th><th>Tashriflar</th><th>Oxirgi tashrif</th><th>Akkaunt</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for p in patients %}
+      <tr>
+        <td><b>{{ p.get_full_name|default:p.username }}</b>
+          <div class="muted small">{{ p.username }}</div></td>
+        <td>{{ p.phone|default:"-" }}</td>
+        <td>{{ p.visits }}</td>
+        <td>{{ p.last_visit|date:"d.m.Y" }}</td>
+        <td>
+          {% if p.has_usable_password %}
+            <span class="badge badge-green">Faol</span>
+          {% else %}
+            <span class="badge badge-gray">Parol o'rnatilmagan</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="actions">
+            <form method="post" action="{% url 'panel_patient_reset' p.pk %}"
+                  onsubmit="return confirm('Bemorning shaxsini tekshirdingizmi? Eski parol bekor qilinadi va yangi vaqtinchalik parol beriladi.')">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline btn-sm">Vaqtinchalik parol</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="center muted">Bemorlar topilmadi.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<p class="muted small" style="margin-top:10px">
+  Faqat shu kasalxonada qabul olgan bemorlar ko'rinadi. Parol berishdan oldin bemorning shaxsini
+  (ism, telefon, oxirgi qabul sanasi yoki hujjat bo'yicha) tekshiring.
+</p>
+{% endblock %}

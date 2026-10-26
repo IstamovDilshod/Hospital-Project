@@ -1,0 +1,31 @@
+{% extends 'panel/base.html' %}
+{% block title %}Bosh panel{% endblock %}
+{% block panel %}
+<div class="panel-head"><h1 class="page-title">Bosh panel</h1></div>
+
+<div class="stats">
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-calendar"/></svg></div>
+    <div><div class="stat-num">{{ stats.today }}</div><div class="muted small">Bugungi qabullar</div></div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-clock"/></svg></div>
+    <div><div class="stat-num">{{ stats.upcoming }}</div><div class="muted small">Kelgusi qabullar</div></div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-users"/></svg></div>
+    <div><div class="stat-num">{{ stats.doctors }}</div><div class="muted small">Faol shifokorlar</div></div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-check"/></svg></div>
+    <div><div class="stat-num">{{ stats.month_done }}</div><div class="muted small">Shu oy yakunlangan</div></div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-userx"/></svg></div>
+    <div><div class="stat-num">{{ stats.month_no_show }}</div><div class="muted small">Shu oy kelmaganlar</div></div>
+  </div>
+</div>
+
+<h2 class="section-title">Bugungi qabullar</h2>
+{% include 'panel/_appt_table.html' with appointments=today_list %}
+{% endblock %}

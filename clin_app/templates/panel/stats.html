@@ -1,0 +1,213 @@
+{% extends 'panel/base.html' %}
+{% block title %}Statistika{% endblock %}
+{% block panel %}
+<div class="panel-head">
+  <h1 class="page-title">Statistika</h1>
+  <a href="{% url 'panel_stats_export' %}?{{ query }}" class="btn btn-outline">
+    <svg class="icon"><use href="#i-download"/></svg> Excel'ga yuklab olish
+  </a>
+</div>
+
+<form method="get" class="card form-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));align-items:end;margin-bottom:12px">
+  <div class="field">
+    <label for="f-from">Dan</label>
+    <input type="date" id="f-from" name="from" value="{{ start|date:'Y-m-d' }}">
+  </div>
+  <div class="field">
+    <label for="f-to">Gacha</label>
+    <input type="date" id="f-to" name="to" value="{{ end|date:'Y-m-d' }}">
+  </div>
+  <div class="field">
+    <label for="f-doctor">Shifokor</label>
+    <select id="f-doctor" name="doctor">
+      <option value="">Barcha shifokorlar</option>
+      {% for d in doctors %}
+        <option value="{{ d.id }}" {% if sel_doctor == d.id|stringformat:"s" %}selected{% endif %}>
+          {{ d.user.get_full_name|default:d.user.username }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <button type="submit" class="btn btn-block">Ko'rsatish</button>
+  </div>
+</form>
+
+<div class="chips" style="margin-bottom:24px">
+  {% for label, q in presets %}<a href="?{{ q }}" class="chip">{{ label }}</a>{% endfor %}
+</div>
+
+<div class="stats">
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-calendar"/></svg></div>
+    <div><div class="stat-num">{{ kpi.total }}</div><div class="muted small">Jami qabullar</div></div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-check"/></svg></div>
+    <div><div class="stat-num">{{ kpi.completed }}</div><div class="muted small">Yakunlangan</div></div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-userx"/></svg></div>
+    <div>
+      <div class="stat-num">{{ kpi.no_show_rate }}%</div>
+      <div class="muted small">Kelmaganlar</div>
+      <div class="stat-sub">{{ kpi.no_show }} ta</div>
+    </div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-x"/></svg></div>
+    <div>
+      <div class="stat-num">{{ kpi.cancel_rate }}%</div>
+      <div class="muted small">Bekor qilingan</div>
+      <div class="stat-sub">{{ kpi.cancelled }} ta</div>
+    </div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-users"/></svg></div>
+    <div><div class="stat-num">{{ kpi.patients }}</div><div class="muted small">Bemorlar</div></div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-wallet"/></svg></div>
+    <div>
+      <div class="stat-num" style="font-size:22px">{{ kpi.revenue_text }}</div>
+      <div class="muted small">Taxminiy daromad (so'm)</div>
+    </div>
+  </div>
+</div>
+
+{% if kpi.total %}
+
+<div class="card chart-card mb-3">
+  <h2>Kunlar bo'yicha qabullar</h2>
+  <p class="muted small mb-1">Bekor qilinganlar hisobga olinmagan.</p>
+  <div class="chart" id="chart-days"></div>
+</div>
+
+<div class="cols-2 mb-3">
+  <div class="card chart-card">
+    <h2>Hafta kunlari bo'yicha</h2>
+    <div class="chart" id="chart-weekdays"></div>
+  </div>
+  <div class="card chart-card">
+    <h2>Soatlar bo'yicha</h2>
+    <div class="chart" id="chart-hours"></div>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <h2 class="section-title">Holatlar taqsimoti</h2>
+  {% for s in statuses %}
+    <div class="hbar-row">
+      <div class="hbar-head"><span>{{ s.label }}</span><b>{{ s.n }} ta · {{ s.pct }}%</b></div>
+      <div class="hbar"><span class="{{ s.css }}" data-w="{{ s.pct }}"></span></div>
+    </div>
+  {% endfor %}
+</div>
+
+<h2 class="section-title">Shifokorlar bo'yicha</h2>
+<div class="card table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Shifokor</th><th>Jami</th><th>Yakunlangan</th><th>Kelmadi</th>
+        <th>Bekor</th><th>Kelmaganlar</th><th>Daromad (so'm)</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for d in doctor_rows %}
+      <tr>
+        <td><b>{{ d.user.get_full_name|default:d.user.username }}</b>
+          <div class="teal small">{{ d.specialty }}</div></td>
+        <td>{{ d.total }}</td>
+        <td>{{ d.done }}</td>
+        <td>{{ d.missed }}</td>
+        <td>{{ d.canceled }}</td>
+        <td>{{ d.miss_rate }}%</td>
+        <td>{{ d.revenue_text }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p class="muted small" style="margin-top:10px">
+  Daromad shifokorning hozirgi narxi bo'yicha, faqat yakunlangan qabullar uchun hisoblangan taxminiy qiymat.
+</p>
+
+{{ chart|json_script:"chart-data" }}
+<script>
+(function () {
+  var el = document.getElementById('chart-data');
+  if (!el) return;
+  var data = JSON.parse(el.textContent);
+  var NS = 'http://www.w3.org/2000/svg';
+
+  function node(name, attrs, text) {
+    var n = document.createElementNS(NS, name);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function shortDate(label) {
+    var m = /^\d{4}-(\d{2})-(\d{2})$/.exec(label);
+    return m ? m[2] + '.' + m[1] : label;
+  }
+
+  function bars(id, series, opts) {
+    var box = document.getElementById(id);
+    if (!box) return;
+    var W = opts.W, H = opts.H, L = 34, R = 8, T = 10, B = 28;
+    var labels = series.labels, values = series.values;
+    var maxV = Math.max.apply(null, values.concat([1]));
+    var step = Math.ceil(maxV / 4), top = step * 4;
+
+    var svg = node('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img' });
+    for (var i = 0; i <= 4; i++) {
+      var y = T + (H - T - B) * (1 - i / 4);
+      svg.appendChild(node('line', { x1: L, x2: W - R, y1: y, y2: y, 'class': 'chart-grid' }));
+      svg.appendChild(node('text', { x: L - 6, y: y + 4, 'text-anchor': 'end', 'class': 'chart-text' }, String(step * i)));
+    }
+
+    var n = values.length;
+    var slot = (W - L - R) / n;
+    var bw = Math.max(2, Math.min(34, slot * 0.7));
+    var every = Math.ceil(n / opts.maxLabels);
+
+    values.forEach(function (v, idx) {
+      var h = (H - T - B) * v / top;
+      var x = L + slot * idx + (slot - bw) / 2;
+      var rect = node('rect', {
+        x: x, y: H - B - h, width: bw, height: h, rx: Math.min(4, bw / 2), 'class': 'chart-bar'
+      });
+      rect.style.animationDelay = Math.min(idx * 12, 400) + 'ms';
+      rect.appendChild(node('title', {}, labels[idx] + ': ' + v));
+      svg.appendChild(rect);
+      if (idx % every === 0) {
+        var text = opts.dates ? shortDate(labels[idx]) : labels[idx];
+        svg.appendChild(node('text', { x: x + bw / 2, y: H - 8, 'text-anchor': 'middle', 'class': 'chart-text' }, text));
+      }
+    });
+
+    box.innerHTML = '';
+    box.appendChild(svg);
+  }
+
+  bars('chart-days', data.days, { W: 720, H: 240, maxLabels: 12, dates: true });
+  bars('chart-weekdays', data.weekdays, { W: 360, H: 220, maxLabels: 7 });
+  bars('chart-hours', data.hours, { W: 360, H: 220, maxLabels: 8 });
+})();
+</script>
+
+{% else %}
+  <div class="card center">
+    <p class="muted">Tanlangan davrda qabullar yo'q. Boshqa sanalarni tanlab ko'ring.</p>
+  </div>
+
+  <script>
+  requestAnimationFrame(function () {
+    document.querySelectorAll('.hbar > span[data-w]').forEach(function (el) {
+      el.style.width = el.dataset.w + '%';
+    });
+  });
+</script>
+{% endif %}
+{% endblock %}

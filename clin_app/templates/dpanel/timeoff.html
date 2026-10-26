@@ -1,0 +1,63 @@
+{% extends 'dpanel/base.html' %}
+{% block title %}Jadval va ta'til{% endblock %}
+{% block panel %}
+<div class="panel-head"><h1 class="page-title">Jadval va ta'til</h1></div>
+
+<div class="detail-two">
+
+  <div>
+    <div class="card mb-3">
+      <h2 class="section-title">Dam olish kunlarini qo'shish</h2>
+      <p class="muted small mb-2">Shu kunlarda bemorlar sizga yozila olmaydi.</p>
+      <form method="post" class="form-grid" style="grid-template-columns:1fr">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+          <div class="field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for e in field.errors %}<span class="err">{{ e }}</span>{% endfor %}
+          </div>
+        {% endfor %}
+        <div class="form-actions">
+          <button type="submit" class="btn"><svg class="icon"><use href="#i-plus"/></svg> Qo'shish</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 class="section-title">Rejalashtirilgan dam olish</h2>
+      {% for off in time_offs %}
+        <div class="list-row">
+          <div>
+            <b>{{ off.start_date|date:"d.m.Y" }}{% if off.end_date != off.start_date %} — {{ off.end_date|date:"d.m.Y" }}{% endif %}</b>
+            {% if off.reason %}<div class="muted small">{{ off.reason }}</div>{% endif %}
+          </div>
+          <form method="post" action="{% url 'dpanel_timeoff_delete' off.pk %}"
+                onsubmit="return confirm('O\'chirilsinmi?')">
+            {% csrf_token %}
+            <button class="icon-btn bad" title="O'chirish"><svg class="icon"><use href="#i-trash"/></svg></button>
+          </form>
+        </div>
+      {% empty %}
+        <p class="muted small">Rejalashtirilgan dam olish yo'q.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">Haftalik ish jadvali</h2>
+    {% for label, items in week %}
+      <div class="week-row">
+        <b>{{ label }}</b>
+        <span>
+          {% for s in items %}{{ s.start_time|time:"H:i" }}–{{ s.end_time|time:"H:i" }}{% if not forloop.last %}, {% endif %}
+          {% empty %}<span class="muted">dam olish</span>{% endfor %}
+        </span>
+      </div>
+    {% endfor %}
+    <p class="muted small" style="margin-top:12px">Jadvalni o'zgartirish uchun kasalxona administratoriga murojaat qiling.</p>
+  </div>
+
+</div>
+{% endblock %}

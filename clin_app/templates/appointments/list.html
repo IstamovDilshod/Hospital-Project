@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Mening qabullarim{% endblock %}
+{% block content %}
+<h1 class="page-title">Mening qabullarim</h1>
+
+{% for a in appointments %}
+  <div class="card appointment">
+    <div>
+      <div class="doctor-name">
+        {{ a.doctor.user.get_full_name|default:a.doctor.user.username }}
+        <span class="teal small" style="font-weight:600">· {{ a.doctor.specialty }}</span>
+      </div>
+      <div class="row muted small" style="margin-top:4px">
+        <svg class="icon"><use href="#i-building"/></svg> {{ a.doctor.hospital.name }}
+      </div>
+      <div class="row small">
+        <span class="row"><svg class="icon teal"><use href="#i-calendar"/></svg> {{ a.date|date:"d.m.Y" }}</span>
+        <span class="row"><svg class="icon teal"><use href="#i-clock"/></svg> {{ a.time|time:"H:i" }}</span>
+      </div>
+    </div>
+
+    <div class="right">
+      <span class="badge
+        {% if a.status == 'cancelled' or a.status == 'no_show' %}badge-red
+        {% elif a.status == 'completed' %}badge-gray
+        {% else %}badge-green{% endif %}">
+        {{ a.get_status_display }}
+      </span>
+
+      {% if a.can_cancel %}
+        <form method="post" action="{% url 'cancel' a.pk %}" style="margin-top:10px"
+              onsubmit="return confirm('Qabulni bekor qilasizmi?')">
+          {% csrf_token %}
+          <button class="link-danger">Bekor qilish</button>
+        </form>
+      {% elif a.cancel_note %}
+        <p class="muted small" style="margin-top:10px;max-width:230px">{{ a.cancel_note }}</p>
+      {% endif %}
+    </div>
+  </div>
+{% empty %}
+  <div class="card center">
+    <p class="muted mb-2">Sizda hali qabul yo'q.</p>
+    <a href="{% url 'doctor_list' %}" class="btn">Shifokor tanlash</a>
+  </div>
+{% endfor %}
+{% endblock %}

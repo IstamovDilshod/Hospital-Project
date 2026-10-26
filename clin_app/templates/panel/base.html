@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+{% with url_name=request.resolver_match.url_name %}
+<div class="panel">
+  <aside class="card panel-side">
+    <div class="panel-hospital">
+      <svg class="icon teal"><use href="#i-building"/></svg> {{ request.hospital.name }}
+    </div>
+    <nav class="panel-nav">
+      <a href="{% url 'panel_dashboard' %}" class="{% if url_name == 'panel_dashboard' %}active{% endif %}">
+        <svg class="icon"><use href="#i-dashboard"/></svg> Bosh panel</a>
+      <a href="{% url 'panel_doctors' %}" class="{% if 'doctor' in url_name %}active{% endif %}">
+        <svg class="icon"><use href="#i-users"/></svg> Shifokorlar</a>
+      <a href="{% url 'panel_appointments' %}" class="{% if 'appointment' in url_name %}active{% endif %}">
+        <svg class="icon"><use href="#i-calendar"/></svg> Qabullar</a>
+      <a href="{% url 'panel_stats' %}" class="{% if 'stats' in url_name %}active{% endif %}">
+        <svg class="icon"><use href="#i-chart"/></svg> Statistika</a>
+      <a href="{% url 'panel_patients' %}" class="{% if 'patient' in url_name %}active{% endif %}">
+        <svg class="icon"><use href="#i-user"/></svg> Bemorlar</a>
+      <a href="{% url 'panel_settings' %}" class="{% if url_name == 'panel_settings' %}active{% endif %}">
+        <svg class="icon"><use href="#i-sliders"/></svg> Sozlamalar</a>
+    </nav>
+  </aside>
+
+  <section class="panel-main">
+    {% block panel %}{% endblock %}
+  </section>
+</div>
+{% endwith %}
+{% endblock %}

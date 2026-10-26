@@ -1,0 +1,39 @@
+{% extends 'panel/base.html' %}
+{% block title %}Ish jadvali{% endblock %}
+{% block panel %}
+<div class="panel-head">
+  <div>
+    <h1 class="page-title">Ish jadvali</h1>
+    <p class="muted small">{{ doctor.user.get_full_name|default:doctor.user.username }} · {{ doctor.specialty }} · bir qabul {{ doctor.slot_minutes }} daqiqa</p>
+  </div>
+</div>
+
+<form method="post" class="card">
+  {% csrf_token %}
+  {{ formset.management_form }}
+  {{ formset.non_form_errors }}
+
+  <p class="muted small mb-2">Tanaffus kerak bo'lsa, bir kunga ikkita oraliq qo'shing (masalan 09:00–13:00 va 14:00–18:00).</p>
+
+  {% for f in formset %}
+    {{ f.id }}
+    <div class="sched-row">
+      <div>{{ f.weekday }}</div>
+      <div>{{ f.start_time }}</div>
+      <div>{{ f.end_time }}</div>
+      <div>
+        {% if f.instance.pk %}
+          <label class="check small">{{ f.DELETE }} O'chirish</label>
+        {% endif %}
+      </div>
+    </div>
+    {% for field in f %}{% for e in field.errors %}<span class="err">{{ e }}</span>{% endfor %}{% endfor %}
+    {{ f.non_field_errors }}
+  {% endfor %}
+
+  <div class="form-actions" style="margin-top:16px">
+    <button type="submit" class="btn"><svg class="icon"><use href="#i-check"/></svg> Saqlash</button>
+    <a href="{% url 'panel_doctors' %}" class="btn btn-outline">Orqaga</a>
+  </div>
+</form>
+{% endblock %}

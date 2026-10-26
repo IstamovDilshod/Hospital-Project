@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uz" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Shifokor qabuli{% endblock %}</title>
+
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('theme'); } catch (e) {}
+      if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=7">
+</head>
+<body>
+{% include '_icons.html' %}
+
+<nav class="navbar">
+  <div class="container">
+    <a href="{% url 'home' %}" class="logo">
+      <span class="logo-mark"><svg class="icon icon-lg"><use href="#i-stethoscope"/></svg></span>
+      Shifokor qabuli
+    </a>
+
+    <div class="nav-links">
+      <button type="button" id="theme-toggle" class="theme-btn nav-ico" data-tip="Tun / kun rejimi" aria-label="Tun / kun rejimi">
+        <svg class="icon icon-sun"><use href="#i-sun"/></svg>
+        <svg class="icon icon-moon"><use href="#i-moon"/></svg>
+      </button>
+
+      <a href="{% url 'doctor_list' %}" class="nav-ico" data-tip="Shifokorlar" aria-label="Shifokorlar">
+        <svg class="icon"><use href="#i-stethoscope"/></svg>
+      </a>
+
+      {% if user.is_authenticated %}
+        {% if user.is_hospital_admin or user.is_superuser %}
+          <a href="{% url 'panel_dashboard' %}" class="nav-ico" data-tip="Boshqaruv paneli" aria-label="Boshqaruv paneli">
+            <svg class="icon"><use href="#i-sliders"/></svg>
+          </a>
+        {% endif %}
+        {% if user.is_doctor %}
+          <a href="{% url 'dpanel_dashboard' %}" class="nav-ico" data-tip="Mening panelim" aria-label="Mening panelim">
+            <svg class="icon"><use href="#i-dashboard"/></svg>
+          </a>
+        {% endif %}
+
+        <a href="{% url 'notifications' %}" class="bell nav-ico" data-tip="Bildirishnomalar" aria-label="Bildirishnomalar">
+          <svg class="icon"><use href="#i-bell"/></svg>
+          <span class="bell-badge" id="notif-badge" data-url="{% url 'notifications_count' %}"
+                {% if not unread_count %}hidden{% endif %}>{{ unread_count }}</span>
+        </a>
+
+        {% if user.is_patient %}
+          <a href="{% url 'my_appointments' %}" class="nav-ico" data-tip="Mening qabullarim" aria-label="Mening qabullarim">
+            <svg class="icon"><use href="#i-calendar"/></svg>
+          </a>
+        {% endif %}
+
+        <a href="{% url 'profile' %}" class="nav-ico" data-tip="Profil: {{ user.get_full_name|default:user.username }}" aria-label="Profil">
+          <svg class="icon"><use href="#i-user"/></svg>
+        </a>
+
+        <form method="post" action="{% url 'logout' %}" class="inline-form">
+          {% csrf_token %}
+          <button type="submit" class="nav-ico danger tip-end" data-tip="Chiqish" aria-label="Chiqish">
+            <svg class="icon"><use href="#i-logout"/></svg>
+          </button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}" class="nav-ico" data-tip="Kirish" aria-label="Kirish">
+          <svg class="icon"><use href="#i-login"/></svg>
+        </a>
+        <a href="{% url 'register' %}" class="btn btn-sm">Ro'yxatdan o'tish</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<main class="container">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+
+      <div class="footer-brand">
+        <a href="{% url 'home' %}" class="logo">
+          <span class="logo-mark"><svg class="icon icon-lg"><use href="#i-stethoscope"/></svg></span>
+          Shifokor qabuli
+        </a>
+        <p>Shifokor qabuliga onlayn yoziling: qulay vaqtni tanlang, navbatda turmang va eslatmalar oling.</p>
+      </div>
+
+      <div class="footer-col">
+        <h3>Bo'limlar</h3>
+        <ul class="footer-links">
+          <li><a href="{% url 'home' %}">Bosh sahifa</a></li>
+          <li><a href="{% url 'doctor_list' %}">Shifokorlar</a></li>
+          {% if user.is_authenticated %}
+            {% if user.is_patient %}<li><a href="{% url 'my_appointments' %}">Mening qabullarim</a></li>{% endif %}
+            <li><a href="{% url 'profile' %}">Profil</a></li>
+          {% else %}
+            <li><a href="{% url 'login' %}">Kirish</a></li>
+            <li><a href="{% url 'register' %}">Ro'yxatdan o'tish</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h3>Aloqa</h3>
+        <!-- Quyidagi ma'lumotlarni o'zingiznikiga almashtiring -->
+        <ul class="footer-links footer-contact">
+          <li><svg class="icon"><use href="#i-phone"/></svg> +998 90 000 00 00</li>
+          <li><svg class="icon"><use href="#i-mail"/></svg> info@example.uz</li>
+          <li><svg class="icon"><use href="#i-send"/></svg> @shifokor_qabuli</li>
+          <li><svg class="icon"><use href="#i-pin"/></svg> Buxoro shahri</li>
+          <li><svg class="icon"><use href="#i-clock"/></svg> Du–Sh: 08:00–18:00</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <span>© {% now "Y" %} Shifokor qabuli. Barcha huquqlar himoyalangan.</span>
+      <span>Shoshilinch holatda 103 ga qo'ng'iroq qiling.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="{% static 'js/app.js' %}?v=7"></script>
+</body>
+</html>

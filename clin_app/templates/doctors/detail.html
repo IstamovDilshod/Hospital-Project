@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}{{ doctor.user.get_full_name|default:doctor.user.username }}{% endblock %}
+{% block content %}
+<div class="detail-grid">
+
+  <div class="card">
+    {% if doctor.photo %}
+      <img src="{{ doctor.photo.url }}" class="avatar avatar-lg" alt="">
+    {% else %}
+      <div class="avatar avatar-lg"><svg class="icon"><use href="#i-user"/></svg></div>
+    {% endif %}
+
+    <h1 style="font-size:22px">{{ doctor.user.get_full_name|default:doctor.user.username }}</h1>
+    <div class="teal" style="font-weight:700">{{ doctor.specialty }}</div>
+
+    {% if doctor.average_rating %}
+      <div class="rating" style="margin-top:6px">
+        <svg class="icon"><use href="#i-star"/></svg> {{ doctor.average_rating|floatformat:1 }}
+      </div>
+    {% endif %}
+
+    <div class="info-list">
+      <div class="row"><svg class="icon"><use href="#i-building"/></svg> {{ doctor.hospital.name }}</div>
+      <div class="row"><svg class="icon"><use href="#i-pin"/></svg> {{ doctor.hospital.address }}</div>
+      <div class="row"><svg class="icon"><use href="#i-briefcase"/></svg> Tajriba: <b>{{ doctor.experience_years }} yil</b></div>
+      <div class="row"><svg class="icon"><use href="#i-wallet"/></svg> Narxi: <b>{{ doctor.price }} so'm</b></div>
+    </div>
+
+    {% if doctor.bio %}
+      <p class="small" style="margin-top:14px">{{ doctor.bio }}</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">Qabulga yozilish</h2>
+
+    <label for="date-input">Kunni tanlang</label>
+    <input type="date" id="date-input" class="date-input"
+           value="{{ today }}" min="{{ today }}" max="{{ max_date }}"
+           data-url="{% url 'doctor_slots' doctor.pk %}">
+
+    <div id="slots"><p class="muted small">Yuklanmoqda...</p></div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'panel/base.html' %}
+{% block title %}Qabullar{% endblock %}
+{% block panel %}
+<div class="panel-head">
+  <h1 class="page-title">Qabullar</h1>
+  <a href="{% url 'panel_appointment_add' %}" class="btn">
+    <svg class="icon"><use href="#i-plus"/></svg> Qabul qo'shish
+  </a>
+</div>
+
+<form method="get" class="filters">
+  <input type="date" name="date" value="{{ date_value }}">
+  <select name="doctor">
+    <option value="">Barcha shifokorlar</option>
+    {% for d in doctors %}
+      <option value="{{ d.id }}" {% if sel_doctor == d.id|stringformat:"s" %}selected{% endif %}>
+        {{ d.user.get_full_name|default:d.user.username }}</option>
+    {% endfor %}
+  </select>
+  <select name="status">
+    <option value="">Barcha holatlar</option>
+    {% for value, label in statuses %}
+      <option value="{{ value }}" {% if sel_status == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn"><svg class="icon"><use href="#i-search"/></svg> Ko'rish</button>
+</form>
+
+<p class="muted small mb-1">Sanani tozalab "Ko'rish" bossangiz, barcha kunlar chiqadi (oxirgi 300 ta).</p>
+{% include 'panel/_appt_table.html' %}
+{% endblock %}

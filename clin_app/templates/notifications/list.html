@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Bildirishnomalar{% endblock %}
+{% block content %}
+<div class="panel-head">
+  <h1 class="page-title">Bildirishnomalar</h1>
+  {% if unread_count %}
+    <form method="post" action="{% url 'notifications_read_all' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline btn-sm">Hammasini o'qilgan qilish</button>
+    </form>
+  {% endif %}
+</div>
+
+<div class="card" style="padding:8px 20px">
+  {% for n in items %}
+    <a href="{% url 'notification_open' n.pk %}" class="notif {% if not n.is_read %}unread{% endif %}">
+      <span class="notif-icon">
+        <svg class="icon icon-lg"><use href="#i-{% if n.kind == 'cancelled' %}x{% elif n.kind == 'reminder' %}clock{% elif n.kind == 'booked' %}calendar{% elif n.kind == 'confirmed' %}check{% else %}bell{% endif %}"/></svg>
+      </span>
+      <span class="notif-body">
+        <b>{{ n.title }}</b>
+        {% if n.text %}<span class="muted small">{{ n.text }}</span>{% endif %}
+        <span class="muted small">{{ n.created_at|date:"d.m.Y H:i" }}</span>
+      </span>
+    </a>
+  {% empty %}
+    <p class="center muted" style="padding:28px 0">Hozircha bildirishnoma yo'q.</p>
+  {% endfor %}
+</div>
+{% endblock %}

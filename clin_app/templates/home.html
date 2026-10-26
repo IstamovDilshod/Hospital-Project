@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<section class="hero">
+  <video class="hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+    <source src="{% static 'video/hero.mp4' %}" type="video/mp4">
+  </video>
+
+  <span class="hero-badge"><svg class="icon"><use href="#i-shield"/></svg> Tez, qulay va ishonchli</span>
+  <h1>Shifokor qabuliga<br>onlayn yoziling</h1>
+  <p>Navbatda turmasdan, o'zingizga qulay vaqtni tanlang</p>
+  <form action="{% url 'doctor_list' %}" class="search-bar">
+    <input name="q" placeholder="Shifokor ismini kiriting...">
+    <button class="btn"><svg class="icon"><use href="#i-search"/></svg> Qidirish</button>
+  </form>
+</section>
+
+<div class="features">
+  <div class="card feature">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-search"/></svg></div>
+    <div><h3>Shifokorni toping</h3><p class="muted small">Mutaxassislik va kasalxona bo'yicha qidiring</p></div>
+  </div>
+  <div class="card feature">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-calendar"/></svg></div>
+    <div><h3>Vaqtni tanlang</h3><p class="muted small">Bo'sh kun va soatni o'zingiz belgilang</p></div>
+  </div>
+  <div class="card feature">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-shield"/></svg></div>
+    <div><h3>Tasdiqlang</h3><p class="muted small">Qabul darhol tasdiqlanadi, navbat kerak emas</p></div>
+  </div>
+</div>
+
+<h2 class="section-title">Mutaxassisliklar</h2>
+<div class="chips">
+  {% for s in specialties %}
+    <a href="{% url 'doctor_list' %}?specialty={{ s.id }}" class="chip">{{ s.name }}</a>
+  {% empty %}
+    <span class="muted small">Mutaxassisliklar hali qo'shilmagan.</span>
+  {% endfor %}
+</div>
+
+<h2 class="section-title">Shifokorlar</h2>
+<div class="grid">
+  {% for doctor in doctors %}
+    {% include 'doctors/_card.html' %}
+  {% empty %}
+    <p class="muted">Hozircha shifokorlar qo'shilmagan.</p>
+  {% endfor %}
+</div>
+{% endblock %}

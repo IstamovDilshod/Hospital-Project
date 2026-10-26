@@ -1,0 +1,31 @@
+{% if slots %}
+  <p class="muted small mb-1">{{ day|date:"d.m.Y" }} uchun bo'sh vaqtlar:</p>
+
+  {% if user.is_authenticated %}
+    <form method="post" action="{% url 'book' doctor.pk %}">
+      {% csrf_token %}
+      <input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}">
+      <div class="slot-list">
+        {% for t in slots %}
+          <label class="slot">
+            <input type="radio" name="time" value="{{ t|time:'H:i' }}" required>
+            <span>{{ t|time:"H:i" }}</span>
+          </label>
+        {% endfor %}
+      </div>
+      <textarea name="complaint" rows="2" placeholder="Shikoyatingiz (ixtiyoriy)" class="mb-2"></textarea>
+      <button type="submit" class="btn">
+        <svg class="icon"><use href="#i-calendar"/></svg> Yozilish
+      </button>
+    </form>
+  {% else %}
+    <div class="slot-list">
+      {% for t in slots %}<span class="slot-static">{{ t|time:"H:i" }}</span>{% endfor %}
+    </div>
+    <a href="{% url 'login' %}?next={% url 'doctor_detail' doctor.pk %}" class="btn btn-ghost">
+      Yozilish uchun tizimga kiring
+    </a>
+  {% endif %}
+{% else %}
+  <p class="muted small">Bu kunga bo'sh vaqt yo'q. Boshqa kunni tanlang.</p>
+{% endif %}

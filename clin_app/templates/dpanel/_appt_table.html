@@ -1,0 +1,48 @@
+<div class="card table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        {% if show_date %}<th>Sana</th>{% endif %}
+        <th>Vaqt</th><th>Bemor</th><th>Shikoyat</th><th>Holat</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for a in appointments %}
+      <tr>
+        {% if show_date %}<td>{{ a.date|date:"d.m.Y" }}</td>{% endif %}
+        <td><b>{{ a.time|time:"H:i" }}</b></td>
+        <td>
+          <a href="{% url 'dpanel_appointment' a.pk %}" class="teal" style="font-weight:700">
+            {{ a.patient.get_full_name|default:a.patient.username }}</a>
+          {% if a.patient.phone %}<div class="muted small">{{ a.patient.phone }}</div>{% endif %}
+        </td>
+        <td class="small">{{ a.complaint|default:"-"|truncatechars:50 }}</td>
+        <td>
+          <span class="badge
+            {% if a.status == 'cancelled' or a.status == 'no_show' %}badge-red
+            {% elif a.status == 'completed' %}badge-gray
+            {% else %}badge-green{% endif %}">{{ a.get_status_display }}</span>
+        </td>
+        <td>
+          <div class="actions">
+            <a href="{% url 'dpanel_appointment' a.pk %}" class="icon-btn" title="Ochish">
+              <svg class="icon"><use href="#i-file"/></svg></a>
+            {% if a.status == 'pending' or a.status == 'confirmed' %}
+            <form method="post" action="{% url 'dpanel_appointment_status' a.pk %}" class="inline-form" style="display:flex;gap:6px">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.get_full_path }}">
+              <button name="status" value="completed" class="icon-btn ok" title="Yakunlandi"><svg class="icon"><use href="#i-check"/></svg></button>
+              <button name="status" value="no_show" class="icon-btn bad" title="Kelmadi"><svg class="icon"><use href="#i-userx"/></svg></button>
+              <button name="status" value="cancelled" class="icon-btn bad" title="Bekor qilish"
+                      onclick="return confirm('Qabul bekor qilinsinmi?')"><svg class="icon"><use href="#i-x"/></svg></button>
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="center muted">Qabullar yo'q.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>

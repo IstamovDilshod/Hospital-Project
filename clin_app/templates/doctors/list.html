@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Shifokorlar{% endblock %}
+{% block content %}
+<h1 class="page-title">Shifokorlar</h1>
+
+<form method="get" class="filters">
+  <input name="q" value="{{ q }}" placeholder="Ism bo'yicha">
+  <select name="specialty">
+    <option value="">Barcha mutaxassisliklar</option>
+    {% for s in specialties %}
+      <option value="{{ s.id }}" {% if selected_specialty == s.id|stringformat:"s" %}selected{% endif %}>{{ s.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="hospital">
+    <option value="">Barcha kasalxonalar</option>
+    {% for h in hospitals %}
+      <option value="{{ h.id }}" {% if selected_hospital == h.id|stringformat:"s" %}selected{% endif %}>{{ h.name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn"><svg class="icon"><use href="#i-search"/></svg> Qidirish</button>
+</form>
+
+<div class="grid">
+  {% for doctor in doctors %}
+    {% include 'doctors/_card.html' %}
+  {% empty %}
+    <div class="card center" style="grid-column:1/-1">
+      <p class="muted">Hech narsa topilmadi.</p>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

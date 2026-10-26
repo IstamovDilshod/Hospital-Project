@@ -1,0 +1,49 @@
+{% extends 'panel/base.html' %}
+{% block title %}Shifokorlar{% endblock %}
+{% block panel %}
+<div class="panel-head">
+  <h1 class="page-title">Shifokorlar</h1>
+  <div class="row">
+    <a href="{% url 'panel_doctors_import' %}" class="btn btn-outline">
+      <svg class="icon"><use href="#i-sheet"/></svg> Excel'dan yuklash
+    </a>
+    <a href="{% url 'panel_doctor_add' %}" class="btn">
+      <svg class="icon"><use href="#i-plus"/></svg> Shifokor qo'shish
+    </a>
+  </div>
+</div>
+
+<div class="card table-wrap">
+  <table class="table">
+    <thead>
+      <tr><th>Shifokor</th><th>Mutaxassislik</th><th>Bo'lim</th><th>Narx</th><th>Holat</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for d in doctors %}
+      <tr>
+        <td><b>{{ d.user.get_full_name|default:d.user.username }}</b>
+          {% if d.user.phone %}<div class="muted small">{{ d.user.phone }}</div>{% endif %}</td>
+        <td>{{ d.specialty }}</td>
+        <td>{{ d.department|default:"-" }}</td>
+        <td>{{ d.price }} so'm</td>
+        <td><span class="badge {% if d.is_active %}badge-green{% else %}badge-gray{% endif %}">
+          {% if d.is_active %}Faol{% else %}Faol emas{% endif %}</span></td>
+        <td>
+          <div class="actions">
+            <a href="{% url 'panel_doctor_schedule' d.pk %}" class="icon-btn" title="Ish jadvali"><svg class="icon"><use href="#i-clock"/></svg></a>
+            <a href="{% url 'panel_doctor_edit' d.pk %}" class="icon-btn" title="Tahrirlash"><svg class="icon"><use href="#i-edit"/></svg></a>
+            <form method="post" action="{% url 'panel_doctor_toggle' d.pk %}" class="inline-form">
+              {% csrf_token %}
+              <button class="icon-btn bad" title="{% if d.is_active %}Faolsizlantirish{% else %}Faollashtirish{% endif %}">
+                <svg class="icon"><use href="#i-power"/></svg></button>
+            </form>
+          </div>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6" class="center muted">Hali shifokor qo'shilmagan.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'panel/base.html' %}
+{% block title %}Excel'dan yuklash{% endblock %}
+{% block panel %}
+<div class="panel-head">
+  <h1 class="page-title">Shifokorlarni Excel'dan yuklash</h1>
+  <a href="{% url 'panel_doctors' %}" class="btn btn-outline">Orqaga</a>
+</div>
+
+<div class="card mb-3">
+  <h2 class="section-title">1. Shablonni yuklab oling</h2>
+  <p class="muted small mb-2">
+    Shablonda misollar va qo'llanma bor. Ish kunlari va ish vaqtini ham kiritsangiz,
+    shifokorning jadvali avtomatik tuziladi.
+  </p>
+  <a href="{% url 'panel_doctors_template' %}" class="btn btn-ghost">
+    <svg class="icon"><use href="#i-download"/></svg> Shablonni yuklab olish (.xlsx)
+  </a>
+</div>
+
+<div class="card mb-3">
+  <h2 class="section-title">2. To'ldirilgan faylni yuklang</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="file" accept=".xlsx" required class="mb-2">
+    <button type="submit" class="btn">
+      <svg class="icon"><use href="#i-upload"/></svg> Yuklash
+    </button>
+  </form>
+  <p class="muted small" style="margin-top:12px">
+    Majburiy ustunlar: Ism, Familiya, Mutaxassislik. Bir martada 500 tagacha qator, fayl 2 MB gacha.
+  </p>
+</div>
+
+{% if result %}
+  <div class="stats">
+    <div class="card stat">
+      <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-check"/></svg></div>
+      <div><div class="stat-num">{{ result.created|length }}</div><div class="muted small">Qo'shildi</div></div>
+    </div>
+    <div class="card stat">
+      <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-x"/></svg></div>
+      <div><div class="stat-num">{{ result.errors|length }}</div><div class="muted small">Xatoli qatorlar</div></div>
+    </div>
+  </div>
+
+  {% if result.new_specialties %}
+    <div class="alert alert-success">
+      Yangi mutaxassisliklar yaratildi: {{ result.new_specialties|join:", " }}.
+      Imlo xatosi bo'lsa, Sozlamalar bo'limida tekshiring.
+    </div>
+  {% endif %}
+
+  {% if result.created %}
+    <h2 class="section-title">Qo'shilgan shifokorlar</h2>
+    <p class="muted small mb-1">
+      Avtomatik yaratilgan parollar faqat hozir ko'rsatiladi. Saqlab oling va shifokorlarga yetkazing.
+    </p>
+    <div class="card table-wrap mb-3">
+      <table class="table">
+        <thead><tr><th>Shifokor</th><th>Mutaxassislik</th><th>Login</th><th>Parol</th><th>Jadval</th></tr></thead>
+        <tbody>
+        {% for d in result.created %}
+          <tr>
+            <td><b>{{ d.name }}</b></td>
+            <td>{{ d.specialty }}</td>
+            <td><code>{{ d.username }}</code></td>
+            <td>{% if d.password %}<code>{{ d.password }}</code>{% else %}<span class="muted">o'zingiz kiritgan</span>{% endif %}</td>
+            <td>{% if d.slots %}{{ d.slots }} ta oraliq{% else %}<span class="muted">yo'q</span>{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  {% if result.errors %}
+    <h2 class="section-title">Xatolar</h2>
+    <p class="muted small mb-1">Bu qatorlar qo'shilmadi. Tuzatib, faqat shu qatorlarni qayta yuklang.</p>
+    <div class="card table-wrap">
+      <table class="table">
+        <thead><tr><th>Qator</th><th>Xato</th></tr></thead>
+        <tbody>
+        {% for row_no, message in result.errors %}
+          <tr><td><b>{{ row_no }}</b></td><td>{{ message }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'dpanel/base.html' %}
+{% block title %}Bugungi navbat{% endblock %}
+{% block panel %}
+<div class="panel-head">
+  <div>
+    <h1 class="page-title">Bugungi navbat</h1>
+    <p class="muted small">{{ today|date:"d.m.Y" }}</p>
+  </div>
+</div>
+
+{% if next_appt %}
+<div class="now-card">
+  <div>
+    <div class="soft">Navbatdagi bemor</div>
+    <h2>{{ next_appt.patient.get_full_name|default:next_appt.patient.username }}</h2>
+    <div class="soft">{{ next_appt.complaint|default:"Shikoyat kiritilmagan"|truncatechars:80 }}</div>
+  </div>
+  <div style="text-align:right">
+    <div class="now-time">{{ next_appt.time|time:"H:i" }}</div>
+    <a href="{% url 'dpanel_appointment' next_appt.pk %}" class="btn btn-white btn-sm" style="margin-top:10px">Qabulni ochish</a>
+  </div>
+</div>
+{% endif %}
+
+<div class="stats">
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-calendar"/></svg></div>
+    <div><div class="stat-num">{{ stats.total }}</div><div class="muted small">Bugun jami</div></div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-clock"/></svg></div>
+    <div><div class="stat-num">{{ stats.waiting }}</div><div class="muted small">Kutayotganlar</div></div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-check"/></svg></div>
+    <div><div class="stat-num">{{ stats.done }}</div><div class="muted small">Qabul qilingan</div></div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-userx"/></svg></div>
+    <div><div class="stat-num">{{ stats.no_show }}</div><div class="muted small">Kelmaganlar</div></div>
+  </div>
+  <div class="card stat">
+    <div class="feature-icon"><svg class="icon icon-lg"><use href="#i-users"/></svg></div>
+    <div><div class="stat-num">{{ stats.upcoming }}</div><div class="muted small">Kelgusi qabullar</div></div>
+  </div>
+</div>
+
+<h2 class="section-title">Bugungi qabullar</h2>
+{% include 'dpanel/_appt_table.html' with appointments=today_list %}
+{% endblock %}
